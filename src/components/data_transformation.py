@@ -1,0 +1,82 @@
+# Importing 'os' module
+import os
+# Importing pandas module
+import pandas as pd
+# logging is imported from logger.py which is available inside the 'src' folder
+from src.logger import logging 
+# CustomException is imported from exceptions.py which is available inside 'src' folder 
+from src.exceptions import CustomException 
+# The Imported data is received from the method of validate from DataValidation class
+from src.components.data_ingestion import DataIngestion
+#Importing module to handle missing values from 'sklearn'
+from sklearn.impute import SimpleImputer
+from sklearn.compose import ColumnTransformer
+
+class DataTransformation:
+    # This function removes the duplicate record from the dataframe(data)
+    def handling_duplicates():
+        data = DataIngestion.validate()
+        if data.duplicated().sum() > 0:
+            logging.info(f"[data_transformation.py] There's a {data.duplicated().sum()} duplicated record in the dataset and removed successfully.")
+            logging.info("[data_transformation.py] The Data passed the 'duplicates_handling()' and moved to check datatypes of the features")
+            data.drop_duplicates(inplace=True)
+        else:
+            logging.info("[data_transformation.py] While Handling the data, there's no duplicates. The Data passed the Duplicates Handling phase") 
+        return data
+        
+    # This function gets the data from 'handling_duplicates' and check whether the datatype of each column is in numeric type or not.
+    # If the data holds any non-numeric feature, then ihe data is not moved further in this project.
+    def get_check_dtypes():
+        data = DataTransformation.handling_duplicates()
+        df_types = pd.DataFrame(data.dtypes)
+        df_types.reset_index(inplace=True)
+        df_types.rename(columns={'index': 'col_name', 0: 'data_type'}, inplace=True)
+        logging.info("[data_transformation.py] Got Datatypes of each column successfully")
+        
+        problamatic_column = []
+        for i in range(len(df_types)):
+            if str(df_types['data_type'][i]).__contains__('int') or str(df_types['data_type'][i]).__contains__('float'):
+                pass 
+            else:
+                problamatic_column.append(df_types['col_name'][i])
+
+        if len(problamatic_column) == 0:
+            logging.info("[data_transformation.py] There is no problem with the datatype of each column. The data passed 'get_check_dtypes()' successfully.")
+            return data
+        else:
+            logging.info(f"[data_transformation.py] There is a problem with the datatype of column -> {problamatic_column}")
+            logging.info(f"[data_transformation.py] The data holds non-numeric feature, then the data is not moved further in this project. Please resolve this!!")
+
+    # This function replace the missing values in independent variable with mean and mode. 
+    # Then, removes the record when there's a missing value in Target variable('LC50')
+    def handling_missing_values():
+        try:
+            data = DataTransformation.get_check_dtypes()
+            data_dep = data['LC50']
+            data_indp = data.drop(['LC50'], axis=1)
+            mean_impute_cols = ['CIC0', 'SM1_Dz(Z)', 'GATS1i', 'MLOGP']
+            mode_impute_cols = ['NdsCH', 'NdssC']
+            transformer = ColumnTransformer(transformers=[
+                ("tf1", SimpleImputer(strategy='mean'), mean_impute_cols),
+                ("tf2", SimpleImputer(strategy='most_frequent'), mode_impute_cols)
+            ])
+            trans_data = transformer.fit_transform(data_indp)
+            column_names = ['CIC0','SM1_Dz(Z)','GATS1i','NdsCH','NdssC','MLOGP', 'LC50']
+            column_names.remove('LC50')
+            new_data = pd.DataFrame(trans_data, columns=column_names)
+            new_data['LC50'] = list(data_dep)
+            # Sometimes, there's a chance of duplicates in target variable. So, we've to remove that too
+            new_data = new_data.dropna()
+            logging.info("[data_transformation.py] The data has passed 'handling_missing_values()' successfully.")
+            logging.info("Data Transformation is completed successfully")
+            return new_data
+        except Exception as e:
+            logging.info("[data_transformation.py] The data won't received 'handling_missing_values()'. So, please resolve this problem.")
+            raise CustomException(e, sys)
+
+    # Here, we're using 'Quantile based flooring and capping' technique to handle the outliers.
+    def handling_outlier:
+        data = DataTransformation.handling_missing_values()
+        pass
+
+        
