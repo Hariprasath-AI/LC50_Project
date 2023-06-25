@@ -100,11 +100,24 @@ class DataTransformation:
         return data
     
     def dimensionality_reduction():
-         #data=DataTransformation.handling_outlier()
-
+        data=DataTransformation.handling_outlier()
+        threshold=0.85 # We, set a threshold of 0.85. So, that the feature is removed above the threshold.
+        corr_columns = set() # Here, the data structure 'set()' is used avoid the duplicate column names.
+        corr_matrix = data.corr() # object.corr() returns the correlation matrix of the dataset.
+        corr_matrix = corr_matrix.remove(['LC50'])
+            for i in range(len(corr_matrix.columns)):
+                for j in range(i):
+                    # If the correlation is greater than threshold, the column name is added to the set 'corr_columns'.
+                    if corr_matrix.iloc[i,j] > threshold:  
+                        column_name = corr_matrix.columns[i]
+                        corr_columns.add(column_name)
+        data.remove(list(corr_columns), axis=1, inplace=True)
+        print(corr_columns)
+        return data
+        
     # This function splits the data into train and test set for model training purpose.
     def train_test_splitting():
-        data=DataTransformation.handling_outlier()
+        #data=DataTransformation.dimensionality_reduction()
         train_data,test_data=train_test_split(data,test_size = 0.2, random_state = 55)
         try:
             os.makedirs('./data/train')

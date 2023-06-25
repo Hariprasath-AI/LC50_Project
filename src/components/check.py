@@ -6,6 +6,6 @@ import os
 import sys
 
 try:
-    print(DataTransformation.train_test_splitting())
+    print(DataTransformation.dimensionality_reduction())
 except Exception as e:
     CustomException(e, sys)
