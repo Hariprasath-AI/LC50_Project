@@ -98,6 +98,9 @@ class DataTransformation:
             data.loc[data[col]>upper_bound, col]=ninetieth_percentile
         logging.info("[data_transformation.py] Outliers handled successfully in 'handling_outlier()'.")
         return data
+    
+    def dimensionality_reduction():
+         #data=DataTransformation.handling_outlier()
 
     # This function splits the data into train and test set for model training purpose.
     def train_test_splitting():
