@@ -103,10 +103,13 @@ class DataTransformation:
     def train_test_splitting():
         data=DataTransformation.handling_outlier()
         train_data,test_data=train_test_split(data,test_size = 0.2, random_state = 55)
-        os.makedirs('./data/train')
-        os.makedirs('./data/test')
-        train_data.to_csv('./data/train/train.csv')
-        test_data.to_csv('./data/test/test.csv')
+        try:
+            os.makedirs('./data/train')
+            os.makedirs('./data/test')
+            train_data.to_csv('./data/train/train.csv')
+            test_data.to_csv('./data/test/test.csv')
+        except:
+            continue
         logging.info("[data_transformation.py] Splitting data into train and test set is done successfully.")
         logging.info("Data Transformation is completed successfully")
         
