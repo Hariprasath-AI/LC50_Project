@@ -6,7 +6,6 @@ import os
 import sys
 
 try:
-    rec = DataTransformation.handling_missing_values()
-    print(rec)
+    print(DataTransformation.train_test_splitting())
 except Exception as e:
     CustomException(e, sys)

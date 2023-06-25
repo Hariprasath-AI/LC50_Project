@@ -2,6 +2,8 @@
 import os
 # Importing pandas module
 import pandas as pd
+# Importing numpy module for statistics
+import numpy as np
 # logging is imported from logger.py which is available inside the 'src' folder
 from src.logger import logging 
 # CustomException is imported from exceptions.py which is available inside 'src' folder 
@@ -10,7 +12,9 @@ from src.exceptions import CustomException
 from src.components.data_ingestion import DataIngestion
 #Importing module to handle missing values from 'sklearn'
 from sklearn.impute import SimpleImputer
+from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
+import pickle
 
 class DataTransformation:
     # This function removes the duplicate record from the dataframe(data)
@@ -68,15 +72,45 @@ class DataTransformation:
             # Sometimes, there's a chance of duplicates in target variable. So, we've to remove that too
             new_data = new_data.dropna()
             logging.info("[data_transformation.py] The data has passed 'handling_missing_values()' successfully.")
-            logging.info("Data Transformation is completed successfully")
             return new_data
         except Exception as e:
             logging.info("[data_transformation.py] The data won't received 'handling_missing_values()'. So, please resolve this problem.")
             raise CustomException(e, sys)
 
+    def compute_outlier(data, col):
+        values=data[col]
+        q1=np.percentile(values,25)
+        q3=np.percentile(values,75)
+        iqr=q3-q1
+        lower_bound=q1-(1.5*iqr)
+        upper_bound=q3+(1.5*iqr)
+        tenth_percentile=np.percentile(values,10)
+        ninetieth_percentile=np.percentile(values,90)
+        return tenth_percentile, ninetieth_percentile, lower_bound, upper_bound
+
     # Here, we're using 'Quantile based flooring and capping' technique to handle the outliers.
-    def handling_outlier:
-        data = DataTransformation.handling_missing_values()
-        pass
+    def handling_outlier():
+        data=DataTransformation.handling_missing_values()
+        to_handle_cols=['CIC0', 'SM1_Dz(Z)', 'GATS1i', 'MLOGP']
+        for col in to_handle_cols:
+            tenth_percentile, ninetieth_percentile, lower_bound, upper_bound=DataTransformation.compute_outlier(data, col)
+            data.loc[data[col]<lower_bound, col]=tenth_percentile
+            data.loc[data[col]>upper_bound, col]=ninetieth_percentile
+        logging.info("[data_transformation.py] Outliers handled successfully in 'handling_outlier()'.")
+        return data
+
+    # This function splits the data into train and test set for model training purpose.
+    def train_test_splitting():
+        data=DataTransformation.handling_outlier()
+        train_data,test_data=train_test_split(data,test_size = 0.2, random_state = 55)
+        os.makedirs('./data/train')
+        os.makedirs('./data/test')
+        train_data.to_csv('./data/train/train.csv')
+        test_data.to_csv('./data/test/test.csv')
+        logging.info("[data_transformation.py] Splitting data into train and test set is done successfully.")
+        logging.info("Data Transformation is completed successfully")
+        
+
+
 
         
