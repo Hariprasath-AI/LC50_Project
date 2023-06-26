@@ -123,7 +123,7 @@ class DataTransformation:
     # This function splits the data into train and test set for model training purpose.
     def train_test_splitting():
         data=DataTransformation.dimensionality_reduction()
-        train_data,test_data=train_test_split(data,test_size = 0.2, random_state = 55)
+        train_data,test_data=train_test_split(data,test_size = 0.2)
         train_data.reset_index(drop=True, inplace = True)
         test_data.reset_index(drop=True, inplace = True)
         Utility.create_directory('./data/train')

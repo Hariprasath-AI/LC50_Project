@@ -55,10 +55,11 @@ class ModelTrainer:
         model = model.fit(x_train, y_train)
         training_time = time.time()-start_time
         start_time = time.time()
-        pred = model.predict(x_test)
+        pred_y_test = model.predict(x_test)
         prediction_time = time.time()-start_time
+        pred_y_train = model.predict(x_train)
         logging.info("[model_trainer.py] Training and Prediction time is recorded successfully")
-        return pred, training_time, prediction_time
+        return pred_y_test, pred_y_train, training_time, prediction_time
 
     def get_mean_absolute_error(pred, y_test):
         score = mean_absolute_error(pred, y_test)
@@ -70,15 +71,13 @@ class ModelTrainer:
         logging.info("[model_trainer.py] Calculated Mean Squared Error successfully")
         return score
 
-    def get_train_score(model, x_train, y_train):
-        y_train_pred = model.predict(x_train) 
-        train_score = r2_score(y_train, y_train_pred)
+    def get_train_score(y_train, pred_y_train):
+        train_score = r2_score(y_train, pred_y_train)
         logging.info("[model_trainer.py] The train score is calculated successfully")
         return train_score
 
-    def get_test_score(model, x_test, y_test):
-        y_test_pred = model.predict(x_test)
-        test_score = r2_score(y_test, y_test_pred)
+    def get_test_score(y_test, pred_y_test):
+        test_score = r2_score(y_test, pred_y_test)
         logging.info("[model_trainer.py] The test score is calculated successfully")
         return test_score
 
@@ -107,12 +106,12 @@ class ModelTrainer:
         x_train, y_train, x_test, y_test = ModelTrainer.import_splitted_data()
         models = Utility.models()
         for x in list(models):
-            prediction,training_time,prediction_time = ModelTrainer.model_trainer(models[x], x_train, y_train, x_test)
-            train_score = ModelTrainer.get_train_score(models[x], x_train, y_train)
-            test_score = ModelTrainer.get_test_score(models[x], x_test, y_test)
-            mean_absolute_error_ = ModelTrainer.get_mean_absolute_error(prediction, y_test)
-            mean_squared_error_ = ModelTrainer.get_mean_squared_error(prediction, y_test)
-            zero_to_one, one_to_two, two_to_three, greater_than_three = ModelTrainer.calculate_error_range(prediction, y_test)
+            pred_y_test, pred_y_train, training_time, prediction_time = ModelTrainer.model_trainer(models[x], x_train, y_train, x_test)
+            train_score = ModelTrainer.get_train_score(y_train, pred_y_train)
+            test_score = ModelTrainer.get_test_score(y_test, pred_y_test)
+            mean_absolute_error_ = ModelTrainer.get_mean_absolute_error(y_test, pred_y_test)
+            mean_squared_error_ = ModelTrainer.get_mean_squared_error(y_test, pred_y_test)
+            zero_to_one, one_to_two, two_to_three, greater_than_three = ModelTrainer.calculate_error_range(y_test, pred_y_test)
             model_name_list.append(str(x))
             training_time_list.append(training_time)
             prediction_time_list.append(prediction_time)
