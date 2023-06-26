@@ -1,0 +1,159 @@
+# Importing 'os' module
+import os
+# Importing pandas module
+import pandas as pd
+# Importing numpy module for statistics
+import numpy as np
+# logging is imported from logger.py which is available inside the 'src' folder
+from src.logger import logging 
+# CustomException is imported from exceptions.py which is available inside 'src' folder 
+from src.exceptions import CustomException 
+# The Imported data is received from the method of validate from DataValidation class
+from src.components.data_transformation import DataTransformation
+# Importing SimpleImputer module to handle missing values from 'sklearn'
+from sklearn.impute import SimpleImputer
+# Importing train_test_split method from sklearn.model_selection
+from sklearn.model_selection import train_test_split
+# ColumnTransformers are used to handle missing data with the help of SimpleImputer 
+from sklearn.compose import ColumnTransformer
+# Importing pickle module
+import pickle
+# Importing linear, ensemble, SVM, catboost and KNN package from sklearn
+from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.ensemble import GradientBoostingRegressor 
+from catboost import CatBoostRegressor
+from sklearn.svm import SVR
+from sklearn.neighbors import KNeighborsRegressor
+from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
+import time
+from src.utils import Utility
+
+
+class ModelTrainer:
+    def import_splitted_data():
+        try:
+            DataTransformation.train_test_splitting()
+        except:
+            pass 
+        train=pd.DataFrame(pd.read_csv('./data/train/train.csv', header = 0))
+        test=pd.DataFrame(pd.read_csv('./data/test/test.csv', header = 0))
+        to_drop_in_train = [x for x in list(train.columns) if x not in Utility.column_names()]
+        to_drop_in_test = [x for x in list(test.columns) if x not in Utility.column_names()]
+        train = train.drop(to_drop_in_train, axis = 1)
+        test = test.drop(to_drop_in_test, axis = 1)
+        x_train = train.drop(['LC50'], axis=1)
+        y_train = train['LC50']
+        x_test = test.drop(['LC50'], axis=1)
+        y_test = test['LC50']
+        logging.info("[model_trainer.py] The train and test data is imported successfully")
+        return x_train, y_train, x_test, y_test
+
+
+    def model_trainer(model, x_train, y_train, x_test):
+        start_time = time.time()
+        model = model.fit(x_train, y_train)
+        training_time = time.time()-start_time
+        start_time = time.time()
+        pred = model.predict(x_test)
+        prediction_time = time.time()-start_time
+        logging.info("[model_trainer.py] Training and Prediction time is recorded successfully")
+        return pred, training_time, prediction_time
+
+    def get_mean_absolute_error(pred, y_test):
+        score = mean_absolute_error(pred, y_test)
+        logging.info("[model_trainer.py] Calculated Mean Absolute Error successfully")
+        return score 
+    
+    def get_mean_squared_error(pred, y_test):
+        score = mean_squared_error(pred, y_test)
+        logging.info("[model_trainer.py] Calculated Mean Squared Error successfully")
+        return score
+
+    def get_train_score(model, x_train, y_train):
+        y_train_pred = model.predict(x_train) 
+        train_score = r2_score(y_train, y_train_pred)
+        logging.info("[model_trainer.py] The train score is calculated successfully")
+        return train_score
+
+    def get_test_score(model, x_test, y_test):
+        y_test_pred = model.predict(x_test)
+        test_score = r2_score(y_test, y_test_pred)
+        logging.info("[model_trainer.py] The test score is calculated successfully")
+        return test_score
+
+    def calculate_error_range(pred, y_test):
+        error=[]
+        zero_to_one,one_to_two,two_to_three,greater_than_three=0,0,0,0
+        for i in range(len(y_test)):
+            error.append(abs(pred[i]-list(y_test)[i]))
+        for x in error:
+            if (x>=0) & (x<=1):
+                zero_to_one+=1
+            elif (x>1) & (x<=2):
+                one_to_two+=1
+            elif (x>2) & (x<=3):
+                two_to_three+=1
+            elif (x>3):
+                greater_than_three+=1
+        logging.info("[model_trainer.py] The Error range is calculated successfully")
+        return zero_to_one, one_to_two, two_to_three, greater_than_three
+
+    def generate_report():
+        report = pd.DataFrame()
+        model_name_list, training_time_list, prediction_time_list = [],[],[]
+        train_score_list, test_score_list, mean_absolute_error_list, mean_squared_error_list = [],[],[],[]
+        zero_to_one_list, one_to_two_list, two_to_three_list, greater_than_three_list = [],[],[],[]
+        x_train, y_train, x_test, y_test = ModelTrainer.import_splitted_data()
+        models = Utility.models()
+        for x in list(models):
+            prediction,training_time,prediction_time = ModelTrainer.model_trainer(models[x], x_train, y_train, x_test)
+            train_score = ModelTrainer.get_train_score(models[x], x_train, y_train)
+            test_score = ModelTrainer.get_test_score(models[x], x_test, y_test)
+            mean_absolute_error_ = ModelTrainer.get_mean_absolute_error(prediction, y_test)
+            mean_squared_error_ = ModelTrainer.get_mean_squared_error(prediction, y_test)
+            zero_to_one, one_to_two, two_to_three, greater_than_three = ModelTrainer.calculate_error_range(prediction, y_test)
+            model_name_list.append(str(x))
+            training_time_list.append(training_time)
+            prediction_time_list.append(prediction_time)
+            train_score_list.append(train_score) 
+            test_score_list.append(test_score) 
+            mean_absolute_error_list.append(mean_absolute_error_) 
+            mean_squared_error_list.append(mean_squared_error_)
+            zero_to_one_list.append(zero_to_one) 
+            one_to_two_list.append(one_to_two) 
+            two_to_three_list.append(two_to_three) 
+            greater_than_three_list.append(greater_than_three)
+
+        report['Model_name'] = model_name_list
+        report['r2_score(Training)'] = train_score_list
+        report['r2_score(Testing)'] = test_score_list
+        report['Training Time(Seconds)'] = training_time_list
+        report['Prediction Time(Seconds)'] = prediction_time_list
+        report['Mean Absolute Error'] = mean_absolute_error_list
+        report['Mean Squared Error'] = mean_squared_error_list
+        report['Error between 0 and 1 out of 182 test data'] = zero_to_one_list
+        report['Error between 1 and 2 out of 182 test data'] = one_to_two_list
+        report['Error between 2 and 3 out of 182 test data'] = two_to_three_list
+        report['Error Greater than 3 out of 182 test data'] = greater_than_three_list
+        Utility.create_directory('./data/report')
+        report.to_csv('./data/report/report.csv')
+        logging.info("[model_trainer.py] The report is generated successfully")
+        #return report
+    """
+    def evaluate_model():
+        report = ModelTrainer.generate_report()
+        models = Utility.models
+    """      
+
+
+
+
+        
+
+            
+
+
+
+
+

@@ -11,10 +11,15 @@ from src.exceptions import CustomException
 # The Imported data is received from the method of validate from DataValidation class
 from src.components.data_ingestion import DataIngestion
 #Importing module to handle missing values from 'sklearn'
+# Importing SimpleImputer module to handle missing values from 'sklearn'
 from sklearn.impute import SimpleImputer
+# Importing train_test_split method from sklearn.model_selection
 from sklearn.model_selection import train_test_split
+# ColumnTransformers are used to handle missing data with the help of SimpleImputer 
 from sklearn.compose import ColumnTransformer
+# Importing pickle module
 import pickle
+from src.utils import Utility
 
 class DataTransformation:
     # This function removes the duplicate record from the dataframe(data)
@@ -65,8 +70,7 @@ class DataTransformation:
                 ("tf2", SimpleImputer(strategy='most_frequent'), mode_impute_cols)
             ])
             trans_data = transformer.fit_transform(data_indp)
-            column_names = ['CIC0','SM1_Dz(Z)','GATS1i','NdsCH','NdssC','MLOGP', 'LC50']
-            column_names.remove('LC50')
+            column_names = ['CIC0','SM1_Dz(Z)','GATS1i','MLOGP','NdsCH','NdssC']
             new_data = pd.DataFrame(trans_data, columns=column_names)
             new_data['LC50'] = list(data_dep)
             # Sometimes, there's a chance of duplicates in target variable. So, we've to remove that too
@@ -105,6 +109,7 @@ class DataTransformation:
         temp_data = data.drop(['LC50'], axis=1)
         corr_columns = set() # Here, the data structure 'set()' is used avoid the duplicate column names.
         corr_matrix = temp_data.corr() # object.corr() returns the correlation matrix of the dataset.
+        # This for loop coves only the left bottom of correlation table. So, 
         for i in range(len(corr_matrix.columns)):
             for j in range(i):
                 # If the correlation is greater than threshold, the column name is added to the set 'corr_columns'.
@@ -112,24 +117,21 @@ class DataTransformation:
                     column_name = corr_matrix.columns[i]
                     corr_columns.add(column_name)
         data.drop(list(corr_columns), axis=1, inplace=True)
-        print(corr_columns)
         logging.info("[data_transformation.py] Dimensionality reduction successfully completed.")
         return data
 
     # This function splits the data into train and test set for model training purpose.
     def train_test_splitting():
-        #data=DataTransformation.dimensionality_reduction()
+        data=DataTransformation.dimensionality_reduction()
         train_data,test_data=train_test_split(data,test_size = 0.2, random_state = 55)
-        try:
-            os.makedirs('./data/train')
-            os.makedirs('./data/test')
-            train_data.to_csv('./data/train/train.csv')
-            test_data.to_csv('./data/test/test.csv')
-        except:
-            pass
+        train_data.reset_index(drop=True, inplace = True)
+        test_data.reset_index(drop=True, inplace = True)
+        Utility.create_directory('./data/train')
+        Utility.create_directory('./data/test')
+        train_data.to_csv('./data/train/train.csv')
+        test_data.to_csv('./data/test/test.csv')
         logging.info("[data_transformation.py] Splitting data into train and test set is done successfully.")
         logging.info("Data Transformation is completed successfully")
-        
 
 
 
