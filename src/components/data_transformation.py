@@ -9,7 +9,7 @@ from src.logger import logging
 # CustomException is imported from exceptions.py which is available inside 'src' folder 
 from src.exceptions import CustomException 
 # The Imported data is received from the method of validate from DataValidation class
-from src.components.data_ingestion import DataIngestion
+from src.components.data_validation import DataValidation
 #Importing module to handle missing values from 'sklearn'
 # Importing SimpleImputer module to handle missing values from 'sklearn'
 from sklearn.impute import SimpleImputer
@@ -24,7 +24,7 @@ from src.utils import Utility
 class DataTransformation:
     # This function removes the duplicate record from the dataframe(data)
     def handling_duplicates():
-        data = DataIngestion.validate()
+        data = DataValidation.validate()
         if data.duplicated().sum() > 0:
             logging.info(f"[data_transformation.py] There's a {data.duplicated().sum()} duplicated record in the dataset and removed successfully.")
             logging.info("[data_transformation.py] The Data passed the 'duplicates_handling()' and moved to check datatypes of the features")
@@ -123,15 +123,21 @@ class DataTransformation:
     # This function splits the data into train and test set for model training purpose.
     def train_test_splitting():
         data=DataTransformation.dimensionality_reduction()
-        train_data,test_data=train_test_split(data,test_size = 0.2)
-        train_data.reset_index(drop=True, inplace = True)
-        test_data.reset_index(drop=True, inplace = True)
-        Utility.create_directory('./data/train')
-        Utility.create_directory('./data/test')
-        train_data.to_csv('./data/train/train.csv')
-        test_data.to_csv('./data/test/test.csv')
-        logging.info("[data_transformation.py] Splitting data into train and test set is done successfully.")
-        logging.info("Data Transformation is completed successfully")
+        try:
+            train_data = pd.read_csv('./data/train/train.csv')
+            test_data = pd.read_csv('./data/test/test.csv')
+            logging.info("[data_transformation.py] Train and Test split is already there. So, Re-spliiting avoided")
+        except:
+            logging.info("[data_transformation.py] Train or test data is missing. So, we're splitting from raw data.")
+            train_data,test_data=train_test_split(data,test_size = 0.2)
+            train_data.reset_index(drop=True, inplace = True)
+            test_data.reset_index(drop=True, inplace = True)
+            Utility.create_directory('./data/train')
+            Utility.create_directory('./data/test')
+            train_data.to_csv('./data/train/train.csv')
+            test_data.to_csv('./data/test/test.csv')
+            logging.info("[data_transformation.py] Splitting data into train and test set is done successfully.")
+            logging.info("Data Transformation is completed successfully")
 
 
 

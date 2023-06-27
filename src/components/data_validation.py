@@ -12,7 +12,7 @@ from src.exceptions import CustomException
 
 # A class named 'DataIngestion' is created which contains the method 'validate' to check whether the data is in csv format or not.
 # If it is not in .csv format, then the data is not imported and throws an exception in the log.
-class DataIngestion:
+class DataValidation:
     def validate():
         try:
             loc = 'data\dataset(csv)\qsar_fish_toxicity.csv'

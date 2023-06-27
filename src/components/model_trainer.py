@@ -19,38 +19,21 @@ from sklearn.compose import ColumnTransformer
 # Importing pickle module
 import pickle
 # Importing linear, ensemble, SVM, catboost and KNN package from sklearn
-from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.ensemble import GradientBoostingRegressor 
-from catboost import CatBoostRegressor
-from sklearn.svm import SVR
-from sklearn.neighbors import KNeighborsRegressor
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 import time
 from src.utils import Utility
 
 
 class ModelTrainer:
-    def import_splitted_data():
+    def import_data():
         try:
             DataTransformation.train_test_splitting()
         except:
             pass 
-        train=pd.DataFrame(pd.read_csv('./data/train/train.csv', header = 0))
-        test=pd.DataFrame(pd.read_csv('./data/test/test.csv', header = 0))
-        to_drop_in_train = [x for x in list(train.columns) if x not in Utility.column_names()]
-        to_drop_in_test = [x for x in list(test.columns) if x not in Utility.column_names()]
-        train = train.drop(to_drop_in_train, axis = 1)
-        test = test.drop(to_drop_in_test, axis = 1)
-        x_train = train.drop(['LC50'], axis=1)
-        y_train = train['LC50']
-        x_test = test.drop(['LC50'], axis=1)
-        y_test = test['LC50']
-        logging.info("[model_trainer.py] The train and test data is imported successfully")
+        x_train, y_train, x_test, y_test = Utility.import_splitted_data()
         return x_train, y_train, x_test, y_test
 
-
-    def model_trainer(model, x_train, y_train, x_test):
+    def model_trainer(model, x_train, y_train, x_test, x):
         start_time = time.time()
         model = model.fit(x_train, y_train)
         training_time = time.time()-start_time
@@ -58,30 +41,30 @@ class ModelTrainer:
         pred_y_test = model.predict(x_test)
         prediction_time = time.time()-start_time
         pred_y_train = model.predict(x_train)
-        logging.info("[model_trainer.py] Training and Prediction time is recorded successfully")
+        logging.info(f"[model_trainer.py] Training and Prediction time is recorded successfully in {x}")
         return pred_y_test, pred_y_train, training_time, prediction_time
 
-    def get_mean_absolute_error(pred, y_test):
+    def get_mean_absolute_error(pred, y_test, x):
         score = mean_absolute_error(pred, y_test)
-        logging.info("[model_trainer.py] Calculated Mean Absolute Error successfully")
+        logging.info(f"[model_trainer.py] Calculated Mean Absolute Error successfully in {x}")
         return score 
     
-    def get_mean_squared_error(pred, y_test):
+    def get_mean_squared_error(pred, y_test, x):
         score = mean_squared_error(pred, y_test)
-        logging.info("[model_trainer.py] Calculated Mean Squared Error successfully")
+        logging.info(f"[model_trainer.py] Calculated Mean Squared Error successfully in {x}")
         return score
 
-    def get_train_score(y_train, pred_y_train):
+    def get_train_score(y_train, pred_y_train, x):
         train_score = r2_score(y_train, pred_y_train)
-        logging.info("[model_trainer.py] The train score is calculated successfully")
+        logging.info(f"[model_trainer.py] The train score is calculated successfully in {x}")
         return train_score
 
-    def get_test_score(y_test, pred_y_test):
+    def get_test_score(y_test, pred_y_test, x):
         test_score = r2_score(y_test, pred_y_test)
-        logging.info("[model_trainer.py] The test score is calculated successfully")
+        logging.info(f"[model_trainer.py] The test score is calculated successfully in {x}")
         return test_score
 
-    def calculate_error_range(pred, y_test):
+    def calculate_error_range(pred, y_test, name):
         error=[]
         zero_to_one,one_to_two,two_to_three,greater_than_three=0,0,0,0
         for i in range(len(y_test)):
@@ -95,10 +78,11 @@ class ModelTrainer:
                 two_to_three+=1
             elif (x>3):
                 greater_than_three+=1
-        logging.info("[model_trainer.py] The Error range is calculated successfully")
+        logging.info(f"[model_trainer.py] The Error range is calculated successfully in {name}")
         return zero_to_one, one_to_two, two_to_three, greater_than_three
 
     def generate_report():
+        Utility.create_directory('./data/report')
         report = pd.DataFrame()
         model_name_list, training_time_list, prediction_time_list = [],[],[]
         train_score_list, test_score_list, mean_absolute_error_list, mean_squared_error_list = [],[],[],[]
@@ -106,12 +90,12 @@ class ModelTrainer:
         x_train, y_train, x_test, y_test = ModelTrainer.import_splitted_data()
         models = Utility.models()
         for x in list(models):
-            pred_y_test, pred_y_train, training_time, prediction_time = ModelTrainer.model_trainer(models[x], x_train, y_train, x_test)
-            train_score = ModelTrainer.get_train_score(y_train, pred_y_train)
-            test_score = ModelTrainer.get_test_score(y_test, pred_y_test)
-            mean_absolute_error_ = ModelTrainer.get_mean_absolute_error(y_test, pred_y_test)
-            mean_squared_error_ = ModelTrainer.get_mean_squared_error(y_test, pred_y_test)
-            zero_to_one, one_to_two, two_to_three, greater_than_three = ModelTrainer.calculate_error_range(y_test, pred_y_test)
+            pred_y_test, pred_y_train, training_time, prediction_time = ModelTrainer.model_trainer(models[x], x_train, y_train, x_test, x)
+            train_score = ModelTrainer.get_train_score(y_train, pred_y_train, x)
+            test_score = ModelTrainer.get_test_score(y_test, pred_y_test, x)
+            mean_absolute_error_ = ModelTrainer.get_mean_absolute_error(y_test, pred_y_test, x)
+            mean_squared_error_ = ModelTrainer.get_mean_squared_error(y_test, pred_y_test, x)
+            zero_to_one, one_to_two, two_to_three, greater_than_three = ModelTrainer.calculate_error_range(y_test, pred_y_test, x)
             model_name_list.append(str(x))
             training_time_list.append(training_time)
             prediction_time_list.append(prediction_time)
@@ -135,15 +119,9 @@ class ModelTrainer:
         report['Error between 1 and 2 out of 182 test data'] = one_to_two_list
         report['Error between 2 and 3 out of 182 test data'] = two_to_three_list
         report['Error Greater than 3 out of 182 test data'] = greater_than_three_list
-        Utility.create_directory('./data/report')
         report.to_csv('./data/report/report.csv')
         logging.info("[model_trainer.py] The report is generated successfully")
-        #return report
-    """
-    def evaluate_model():
-        report = ModelTrainer.generate_report()
-        models = Utility.models
-    """      
+        logging.info("Model Training is Successfully completed")     
 
 
 
