@@ -27,10 +27,11 @@ from src.utils import Utility
 class ModelTrainer:
     def import_data():
         try:
-            DataTransformation.train_test_splitting()
+            x_train, y_train, x_test, y_test = Utility.import_splitted_data()
         except:
-            pass 
-        x_train, y_train, x_test, y_test = Utility.import_splitted_data()
+            DataTransformation.train_test_splitting()
+            x_train, y_train, x_test, y_test = Utility.import_splitted_data()
+        
         return x_train, y_train, x_test, y_test
 
     def model_trainer(model, x_train, y_train, x_test, x):
@@ -87,7 +88,7 @@ class ModelTrainer:
         model_name_list, training_time_list, prediction_time_list = [],[],[]
         train_score_list, test_score_list, mean_absolute_error_list, mean_squared_error_list = [],[],[],[]
         zero_to_one_list, one_to_two_list, two_to_three_list, greater_than_three_list = [],[],[],[]
-        x_train, y_train, x_test, y_test = ModelTrainer.import_splitted_data()
+        x_train, y_train, x_test, y_test = ModelTrainer.import_data()
         models = Utility.models()
         for x in list(models):
             pred_y_test, pred_y_train, training_time, prediction_time = ModelTrainer.model_trainer(models[x], x_train, y_train, x_test, x)

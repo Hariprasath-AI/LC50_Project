@@ -30,7 +30,7 @@ class ModelEvaluation:
             report = pd.DataFrame(pd.read_csv('./data/report/report.csv', header = 0))
             logging.info("[model_evaluation.py] Error Occured at 'evaluate'")
 
-            if (max(report['r2_score(Testing)']) > 0.6):
+            if (max(report['r2_score(Testing)']) >= 0.7):
                 report = report.where(report['r2_score(Testing)'] == max(report['r2_score(Testing)']))
                 report = report.dropna()            
                 best_model_name = list(report['Model_name'])[0]
@@ -43,7 +43,7 @@ class ModelEvaluation:
                 Utility.save(model , './data/model/best_model.pkl')
                 logging.info(f"Here, the best model is {best_model_name} with r2_score of {max(report['r2_score(Testing)'])}")
             else:
-                logging.info("No better models found because of r2_score is lower tha 0.6 for all the models")
+                logging.info("No better models found because of r2_score is lower tha 0.7 for all the models")
                     
 
 

@@ -75,8 +75,12 @@ class DataTransformation:
             new_data['LC50'] = list(data_dep)
             # Sometimes, there's a chance of duplicates in target variable. So, we've to remove that too
             new_data = new_data.dropna()
+            data = pd.DataFrame()
+            # Column order is changed due to ColumnTransformer. So, we're reverting back to original form
+            for x in Utility.column_names():
+                data[x] = new_data[x]
             logging.info("[data_transformation.py] The data has passed 'handling_missing_values()' successfully.")
-            return new_data
+            return data
         except Exception as e:
             logging.info("[data_transformation.py] The data won't received 'handling_missing_values()'. So, please resolve this problem.")
             raise CustomException(e, sys)
@@ -122,13 +126,20 @@ class DataTransformation:
 
     # This function splits the data into train and test set for model training purpose.
     def train_test_splitting():
-        data=DataTransformation.dimensionality_reduction()
         try:
             train_data = pd.read_csv('./data/train/train.csv')
             test_data = pd.read_csv('./data/test/test.csv')
             logging.info("[data_transformation.py] Train and Test split is already there. So, Re-spliiting avoided")
+
         except:
             logging.info("[data_transformation.py] Train or test data is missing. So, we're splitting from raw data.")
+            try:
+                data = pd.read_csv('./data/cleaned_data/cleaned_data.csv')
+            except:
+                data = DataTransformation.dimensionality_reduction()
+                Utility.create_directory('./data/cleaned_data')
+                data.to_csv('./data/cleaned_data/cleaned_data.csv')
+
             train_data,test_data=train_test_split(data,test_size = 0.2)
             train_data.reset_index(drop=True, inplace = True)
             test_data.reset_index(drop=True, inplace = True)
