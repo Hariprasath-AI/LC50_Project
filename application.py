@@ -4,7 +4,9 @@ import pandas as pd
 from src.components.model_loader import ModelLoader
 from src.logger import logging
 
-app=Flask(__name__)
+application=Flask(__name__)
+
+app = application
 
 @app.route('/')
 def home():
