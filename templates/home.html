@@ -65,7 +65,7 @@
         font-size: 12px;
       }
 
-      .container form a {
+      .container form .btn {
         position: relative;
         display: inline-block;
         padding: 10px 20px;
@@ -79,7 +79,7 @@
         letter-spacing: 4px
       }
 
-      .container a:hover {
+      .container .btn:hover {
         background: #03e9f4;
         color: #fff;
         border-radius: 5px;
@@ -87,12 +87,12 @@
                     0 0 25px #03e9f4;
       }
 
-      .container a span {
+      .container .btn span {
         position: absolute;
         display: block;
       }
 
-      .container a span:nth-child(1) {
+      .container .btn span:nth-child(1) {
         top: 0;
         left: -100%;
         width: 100%;
@@ -110,7 +110,7 @@
         }
       }
 
-      .container a span:nth-child(2) {
+      .container .btn span:nth-child(2) {
         top: -100%;
         right: 0;
         width: 2px;
@@ -132,7 +132,7 @@
       .preds{
           color: #fff;
       }
-      .container a span:nth-child(3) {
+      .container .btn span:nth-child(3) {
         bottom: 0;
         right: -100%;
         width: 100%;
@@ -151,7 +151,7 @@
         }
       }
 
-      .container a span:nth-child(4) {
+      .container .btn span:nth-child(4) {
         bottom: -100%;
         left: 0;
         width: 2px;
@@ -171,46 +171,43 @@
       }
 
       
+      
     </style>
 </head>
 <body>
     <div class="container">
-        <form action='/predict' method='POST'>
+        <form action= "{{ url_for('make_predictions') }}" method='POST'>
           <h2>Prediction of LC50 value using Quantitative structure-activity relationship models (QSAR models)</h2>
           <div class="user-box">
-            <input type="number" name="CIC0" required>
+            <input type="text" name="CIC0" required>
             <label><b>CIC0</b></label>
           </div>
           <div class="user-box">
-            <input type="number" name="SM1_Dz(Z)" required>
+            <input type="text" name="SM1_Dz(Z)" required>
             <label><b>SM1_Dz(Z)</b></label>
           </div>
           <div class="user-box">
-            <input type="number" name="GATS1i"required>
+            <input type="text" name="GATS1i"required>
             <label><b>GATS1i</b></label>
           </div>
           <div class="user-box">
-            <input type="number" name="NdsCH" required>
+            <input type="text" name="NdsCH" required>
             <label><b>NdsCH</b></label>
           </div>
           <div class="user-box">
-            <input type="number" name="NdssC" required>
+            <input type="text" name="NdssC" required>
             <label><b>NdssC</b></label>
           </div>
           <div class="user-box">
-            <input type="number" name="MLOGP" required>
+            <input type="text" name="MLOGP" required>
             <label><b>MLOGP</b></label>
           </div>
-          <a href="#">
-            <span></span>
-            <span></span>
-            <span></span>
-            <span></span>
-            <b>Predict</b>
-          </a>
+          <div>
+            <input class='btn' type="submit" value="Predict" required/>
+          </div>
         </form>
         <h3 class="preds">
-          The Predicted LC50 value is {{result}}
+          The Predicted LC50 value is {{preds}}
         </h3>
     </div>
 </body>
