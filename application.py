@@ -6,13 +6,11 @@ from src.logger import logging
 
 application=Flask(__name__)
 
-app = application
-
-@app.route('/')
+@application.route('/')
 def home():
     return render_template('home.html')
 
-@app.route('/predict', methods=['GET', 'POST'])
+@application.route('/predict', methods=['GET', 'POST'])
 def make_predictions():
     if request.method=='GET':
         return render_template('home.html')
