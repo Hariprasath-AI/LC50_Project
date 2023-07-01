@@ -1,17 +1,15 @@
-# In this python file we're going to check whether the incoming data is in the format of csv or in any other form and then import it.
-# Importing 'os' module
+# The Packages/Methods which are necessary for Data validation phase are imported here.
 import os
-# Importing 'sys' module 
 import sys  
-# Importing pandas module
 import pandas as pd 
-# logging is imported from logger.py which is available inside the 'src' folder
 from src.logger import logging 
-# CustomException is imported from exceptions.py which is available inside 'src' folder 
 from src.exceptions import CustomException 
 
-# A class named 'DataIngestion' is created which contains the method 'validate' to check whether the data is in csv format or not.
-# If it is not in .csv format, then the data is not imported and throws an exception in the log.
+'''
+A class named 'DataValidation' is created which contains the method 'validate' to check whether the data is in .csv format or not.
+If it is not in .csv format, then the data is not imported and throws an exception in the log.
+The Project got struck here.
+'''
 class DataValidation:
     def validate():
         try:

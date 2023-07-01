@@ -1,3 +1,4 @@
+# Custom Exceptions are used to know the error in a detailed manner
 import sys
 
 def error_message_detail(error, error_details:sys):

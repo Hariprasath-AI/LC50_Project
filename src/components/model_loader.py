@@ -1,8 +1,15 @@
+# The Packages/Methods which are necessary for Model Loading phase are imported here.
 from src.components.model_evaluation import ModelEvaluation
 from src.utils import Utility
 from src.logger import logging
 
+# All operations related to Model Loading phase are carried out inside the class 'ModelLoader'
 class ModelLoader:
+
+    '''
+    The 'loader' function first tries to load the model in particular loaction. If not available in that location, 
+    the evaluate method of class ModelEvaluation is called here.
+    '''
     def loader():
         try:
             model = Utility.load('./data/model/best_model.pkl')

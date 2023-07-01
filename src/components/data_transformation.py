@@ -1,28 +1,19 @@
-# Importing 'os' module
+# Necessary modules/packages imported here for the Data Transformation Phase.
 import os
-# Importing pandas module
 import pandas as pd
-# Importing numpy module for statistics
 import numpy as np
-# logging is imported from logger.py which is available inside the 'src' folder
 from src.logger import logging 
-# CustomException is imported from exceptions.py which is available inside 'src' folder 
 from src.exceptions import CustomException 
-# The Imported data is received from the method of validate from DataValidation class
 from src.components.data_validation import DataValidation
-#Importing module to handle missing values from 'sklearn'
-# Importing SimpleImputer module to handle missing values from 'sklearn'
 from sklearn.impute import SimpleImputer
-# Importing train_test_split method from sklearn.model_selection
 from sklearn.model_selection import train_test_split
-# ColumnTransformers are used to handle missing data with the help of SimpleImputer 
 from sklearn.compose import ColumnTransformer
-# Importing pickle module
 import pickle
 from src.utils import Utility
 
+# The class 'DataTransformation' is responsible for all data transformation operations.
 class DataTransformation:
-    # This function removes the duplicate record from the dataframe(data)
+    # The 'handling_duplicates' function removes the duplicate record from the dataframe(data) and returns the data.
     def handling_duplicates():
         data = DataValidation.validate()
         if data.duplicated().sum() > 0:
@@ -32,9 +23,11 @@ class DataTransformation:
         else:
             logging.info("[data_transformation.py] While Handling the data, there's no duplicates. The Data passed the Duplicates Handling phase") 
         return data
-        
-    # This function gets the data from 'handling_duplicates' and check whether the datatype of each column is in numeric type or not.
-    # If the data holds any non-numeric feature, then ihe data is not moved further in this project.
+
+    '''    
+    The 'get_check_dtypes' function gets the data from 'handling_duplicates' and check whether the datatype of each column is in numeric type or not.
+    If the data holds any non-numeric feature, then the data is not moved further in this project.
+    '''
     def get_check_dtypes():
         data = DataTransformation.handling_duplicates()
         df_types = pd.DataFrame(data.dtypes)
@@ -56,8 +49,10 @@ class DataTransformation:
             logging.info(f"[data_transformation.py] There is a problem with the datatype of column -> {problamatic_column}")
             logging.info(f"[data_transformation.py] The data holds non-numeric feature, then the data is not moved further in this project. Please resolve this!!")
 
-    # This function replace the missing values in independent variable with mean and mode. 
-    # Then, removes the record when there's a missing value in Target variable('LC50')
+    '''
+    This function replace the missing values in independent variable with mean and mode. 
+    Then, removes the record when there's a missing value in Target variable('LC50')
+    '''
     def handling_missing_values():
         try:
             data = DataTransformation.get_check_dtypes()
@@ -73,7 +68,7 @@ class DataTransformation:
             column_names = ['CIC0','SM1_Dz(Z)','GATS1i','MLOGP','NdsCH','NdssC']
             new_data = pd.DataFrame(trans_data, columns=column_names)
             new_data['LC50'] = list(data_dep)
-            # Sometimes, there's a chance of duplicates in target variable. So, we've to remove that too
+            # Sometimes, there's a chance of 'null' in target variable. So, we've to remove that too..
             new_data = new_data.dropna()
             data = pd.DataFrame()
             # Column order is changed due to ColumnTransformer. So, we're reverting back to original form
@@ -85,6 +80,12 @@ class DataTransformation:
             logging.info("[data_transformation.py] The data won't received 'handling_missing_values()'. So, please resolve this problem.")
             raise CustomException(e, sys)
 
+    '''
+    'compute_outlier' function gets DataFrame and column name as input parameter.
+    Then, it calculates Inter Quartile Range(IQR) and the lower & upper bound valuer for that feature is calculated.
+    Tenth and Ninetieth percentile are also calculated.
+    Finally, the function returns 'tenth_percentile', 'ninetieth_percentile', 'lower_bound' and 'upper_bound'
+    '''
     def compute_outlier(data, col):
         values=data[col]
         q1=np.percentile(values,25)
@@ -96,7 +97,14 @@ class DataTransformation:
         ninetieth_percentile=np.percentile(values,90)
         return tenth_percentile, ninetieth_percentile, lower_bound, upper_bound
 
-    # Here, we're using 'Quantile based flooring and capping' technique to handle the outliers.
+    '''
+    'handling_outlier' function gets data from the function 'handling_missing_values'.
+    Removing records with outilers are not a good practice. One of the best way to handle those outliers are 
+    'Quantile based Flooring and Capping' technique. In this technique, the outilers which are less than lower bound 
+    will be replaced with tenth_percentile and the outliers which are greater than the upper bound
+    will be replaced by ninetieth_percentile. 
+    After replacing all outliers in the dataset, returning data.
+    '''
     def handling_outlier():
         data=DataTransformation.handling_missing_values()
         to_handle_cols=['CIC0', 'SM1_Dz(Z)', 'GATS1i', 'MLOGP']
@@ -107,6 +115,10 @@ class DataTransformation:
         logging.info("[data_transformation.py] Outliers handled successfully in 'handling_outlier()'.")
         return data
     
+    '''
+    'dimensionality_reduction' function checks if independent features having high correlation between them.
+    If so, any one of the feature is removed from the DataFrame then returning the data.
+    '''
     def dimensionality_reduction():
         data=DataTransformation.handling_outlier()
         threshold=0.85 # We, set a threshold of 0.85. So, that the feature is removed above the threshold.
@@ -124,7 +136,10 @@ class DataTransformation:
         logging.info("[data_transformation.py] Dimensionality reduction successfully completed.")
         return data
 
-    # This function splits the data into train and test set for model training purpose.
+    '''
+    The 'train_test_splitting' function is responsible for saving the data which got from 'dimensionality_reduction' as cleaned data.
+    The, it splits the data into train and test set for Model Training phase and save into the paricular directory and logged.
+    '''
     def train_test_splitting():
         try:
             train_data = pd.read_csv('./data/train/train.csv')

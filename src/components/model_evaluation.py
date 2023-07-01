@@ -1,3 +1,4 @@
+# The Packages/Methods which are necessary for Data Evaluation phase are imported here.
 from src.components.model_trainer import ModelTrainer
 from src.utils import Utility
 import pickle
@@ -5,15 +6,14 @@ import pandas as pd
 import os
 from src.logger import logging
 import numpy
-from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.ensemble import GradientBoostingRegressor 
-from catboost import CatBoostRegressor
-from sklearn.svm import SVR
-from sklearn.neighbors import KNeighborsRegressor
 
-
+# All operations related to Data Evaluation phase are carried out inside the class 'ModelEvaluation'
 class ModelEvaluation:
+
+    '''
+    The 'check_report' function checks whether the report is available in particular directory or not!!!
+    Else, it will be logged.
+    '''
     def check_report():
         try:
             ModelTrainer.generate_report()
@@ -21,6 +21,10 @@ class ModelEvaluation:
             logging.info("[model_evaluation.py] Error occured at 'check_report'")
         logging.info("[model_evaluation.py]  'check_report' passed")
 
+    '''
+    The 'evaluate' function responsible to pick the best model from the report and that model is trained again then, 
+    stored it in the particular location and looged.
+    '''
     def evaluate():
         try:
             report = pd.DataFrame(pd.read_csv('./data/report/report.csv', header = 0))

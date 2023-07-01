@@ -1,39 +1,41 @@
-# Importing 'os' module
+# The Packages/Methods which are necessary for Model training phase are imported here.
 import os
-# Importing pandas module
 import pandas as pd
-# Importing numpy module for statistics
 import numpy as np
-# logging is imported from logger.py which is available inside the 'src' folder
 from src.logger import logging 
-# CustomException is imported from exceptions.py which is available inside 'src' folder 
 from src.exceptions import CustomException 
-# The Imported data is received from the method of validate from DataValidation class
 from src.components.data_transformation import DataTransformation
-# Importing SimpleImputer module to handle missing values from 'sklearn'
 from sklearn.impute import SimpleImputer
-# Importing train_test_split method from sklearn.model_selection
 from sklearn.model_selection import train_test_split
-# ColumnTransformers are used to handle missing data with the help of SimpleImputer 
 from sklearn.compose import ColumnTransformer
-# Importing pickle module
 import pickle
-# Importing linear, ensemble, SVM, catboost and KNN package from sklearn
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 import time
 from src.utils import Utility
 
-
+# All operations related to Model Training phase are carried out inside the class 'ModelTrainer'
 class ModelTrainer:
+
+    '''
+    The 'import_data' function first tries to get the x_train, y_train, x_test and y_test from the 'import_splitted_data' method 
+    of class 'Utility' from 'utils.py'. If not, 'train_test_splitting' method of class 'DataTransformation' is called and then 
+    'import_splitted_data' is called
+    '''
     def import_data():
         try:
             x_train, y_train, x_test, y_test = Utility.import_splitted_data()
         except:
             DataTransformation.train_test_splitting()
             x_train, y_train, x_test, y_test = Utility.import_splitted_data()
-        
         return x_train, y_train, x_test, y_test
 
+    '''
+    The 'model_trainer' gets model, x_train, y_train, x_test, and model name as input parameter. 
+    Then, x_train and y_train is fitted on the model.
+    Then, prediction on x_test and x_train.
+    The training time and Prediction time is recorded using 'time' module.
+    Finally, Prediction on x_test and x_train, prediction time, training time is returned.
+    '''
     def model_trainer(model, x_train, y_train, x_test, x):
         start_time = time.time()
         model = model.fit(x_train, y_train)
@@ -45,26 +47,48 @@ class ModelTrainer:
         logging.info(f"[model_trainer.py] Training and Prediction time is recorded successfully in {x}")
         return pred_y_test, pred_y_train, training_time, prediction_time
 
+    '''
+    The 'get_mean_absolute_error' function gets prediction on y_test, y_test and model name as input.
+    Then, mean_absolute_error is calculated on y_test and prediction then returned
+    '''
     def get_mean_absolute_error(pred, y_test, x):
-        score = mean_absolute_error(pred, y_test)
+        score = mean_absolute_error(y_test, pred)
         logging.info(f"[model_trainer.py] Calculated Mean Absolute Error successfully in {x}")
         return score 
     
+    '''
+    The 'get_mean_squared_error' function gets prediction on y_test, y_test and model name as input.
+    Then, mean_squared_error is calculated on y_test and prediction then returned
+    '''
     def get_mean_squared_error(pred, y_test, x):
-        score = mean_squared_error(pred, y_test)
+        score = mean_squared_error(y_test, pred)
         logging.info(f"[model_trainer.py] Calculated Mean Squared Error successfully in {x}")
         return score
 
+    '''
+    The 'get_train_score' function gets prediction on y_train, y_train and model name as input.
+    Then, r2_score is calculated on y_train and prediction then returned.
+    '''
     def get_train_score(y_train, pred_y_train, x):
         train_score = r2_score(y_train, pred_y_train)
         logging.info(f"[model_trainer.py] The train score is calculated successfully in {x}")
         return train_score
 
+    '''
+    The 'get_test_score' function gets prediction on y_test, y_test and model name as input.
+    Then, r2_score is calculated on y_test and prediction then returned.
+    '''
     def get_test_score(y_test, pred_y_test, x):
         test_score = r2_score(y_test, pred_y_test)
         logging.info(f"[model_trainer.py] The test score is calculated successfully in {x}")
         return test_score
 
+    '''
+    The function 'calculate_error_range' gets prediction , y_test and model name as input.
+    Then, it calculates the difference between prediction and actual value. This show how good the model is...
+    Then, it calculates the count on range of zero to one, one to two, two to three and greater than three.
+    Finally, the calculated range is returned.
+    '''
     def calculate_error_range(pred, y_test, name):
         error=[]
         zero_to_one,one_to_two,two_to_three,greater_than_three=0,0,0,0
@@ -82,6 +106,11 @@ class ModelTrainer:
         logging.info(f"[model_trainer.py] The Error range is calculated successfully in {name}")
         return zero_to_one, one_to_two, two_to_three, greater_than_three
 
+    '''
+    The 'generate_report' function generates the report in .csv format with all details of 'Model_name', 'r2_score(Training)',
+    'r2_score(Testing)', 'Training Time(Seconds)', 'Mean Absolute Error', 'Mean Squared Error', 'Error between 0 and 1 out of 182 test data',
+    'Error between 1 and 2 out of 182 test data', 'Error between 2 and 3 out of 182 test data' and 'Error Greater than 3 out of 182 test data'. 
+    '''
     def generate_report():
         Utility.create_directory('./data/report')
         report = pd.DataFrame()

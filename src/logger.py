@@ -1,3 +1,9 @@
+'''
+Logging our process is important while developing as project. We know that the project is not a single file.
+It contains lot of files. In that, we're having class and functions. The importance of creating a log is to know the flow of our code. 
+In our case, the log is useful to know about flow of the data from one method to another method and also to another file.
+We can easily identify where the code gets struck in case of 'Error' situation.
+'''
 import logging
 import os
 from datetime import datetime
