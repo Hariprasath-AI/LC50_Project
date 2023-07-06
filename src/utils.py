@@ -8,6 +8,8 @@ from sklearn.ensemble import GradientBoostingRegressor
 from catboost import CatBoostRegressor
 from sklearn.svm import SVR
 from sklearn.neighbors import KNeighborsRegressor
+from sklearn.metrics import r2_score
+from sklearn.model_selection import GridSearchCV
 from src.logger import logging
 import pandas as pd
 import pickle
@@ -29,10 +31,76 @@ class Utility:
             'RandomForest Regressor' : RandomForestRegressor(),
             'GradientBoosting Regressor' : GradientBoostingRegressor(),
             'CatBoost Regressor' : CatBoostRegressor(),
-            'SupportVector Regressor' : SVR(),
-            'KNeighborsRegressor' : KNeighborsRegressor(n_neighbors=6)
+            'SupportVector Regressor' : SVR()
         }
         return models_
+
+    def custom_model_training(x_train, y_train, x_test, y_test):
+        modelname, r2_score_train, r2_score_test, score_difference = [],[],[],[]
+        depth_, iterations_, learning_rate_ = [],[],[]
+        report = pd.DataFrame()
+        no_tune_cbr = CatBoostRegressor(verbose=0).fit(x_train,y_train)
+        pred = no_tune_cbr.predict(x_test)
+        pred_y_train = no_tune_cbr.predict(x_train)
+        modelname.append('CatBoost Regressor Un-tuned')
+        r2_score_train.append(r2_score(y_train, pred_y_train))
+        r2_score_test.append(r2_score(y_test, pred))
+        depth_.append(None)
+        iterations_.append(None)
+        learning_rate_.append(None)
+
+        depth = [1,2,3,4,5,6,7,8,9,10]
+        iterations = [1000,1050,1100,1150,1200,1250,1300,1350,1400,1450,1500,1550,1600,1750,2000]
+        learning_rate = [0.001,0.005,0.007,0.01,0.02,0.03,0.04,0.05,0.07,0.1]
+        
+        for i in range(len(depth)):
+            for j in range(len(iterations)):
+                for k in range(len(learning_rate)):
+                    tuned_cbr = CatBoostRegressor(depth=depth[i], iterations=iterations[j], learning_rate=learning_rate[k],verbose=0).fit(x_train,y_train)
+                    pred = tuned_cbr.predict(x_test)
+                    pred_y_train = tuned_cbr.predict(x_train)
+                    modelname.append('CatBoost Regressor Tuned')
+                    r2_score_train.append(r2_score(y_train, pred_y_train))
+                    r2_score_test.append(r2_score(y_test, pred))
+                    score_difference.append(r2_score(y_train, pred_y_train) - r2_score(y_test, pred))
+                    depth_.append(depth[i])
+                    iterations_.append(iterations[j])
+                    learning_rate_.append(learning_rate[k])
+                    
+        report['Model Name'], report['R2_Score(Training)'], report['R2_Score_Testing'] = modelname, r2_score_train, r2_score_test
+        report['Depth'], report['Iterations'], report['Learning Rate'] = depth_, iterations_, learning_rate_
+        Utility.create_directory('./data/final_report')
+        report.to_csv('./data/final_report/final_report.csv')
+
+    def filtered_report():
+        try:
+            report = pd.DataFrame(pd.read_csv('./data/final_report/final_report.csv', header=0))
+        except:
+            Utility.custom_model_training(x_train, y_train, x_test, y_test)
+            report = pd.DataFrame(pd.read_csv('./data/final_report/final_report.csv', header=0))
+        x_train, y_train, x_test, y_test = Utility.import_splitted_data()
+        report_cols = ['Model Name','R2_Score(Training)','R2_Score_Testing','Depth','Iterations','Learning Rate', 'Score Difference']
+        to_drop = [x for x in list(report.columns) if x not in report_cols]
+        report.drop(to_drop, axis=1, inplace=True)
+        report['Score Difference'] = list(report['R2_Score(Training)'] - report['R2_Score_Testing'])
+        report = report.loc[report['Score Difference']>=0]
+        report.sort_values(by='R2_Score_Testing', ascending=False,inplace=True)
+        report.reset_index(drop=True,inplace=True)
+        Utility.create_directory('./data/filtered_final_report')
+        report.to_csv('./data/filtered_final_report/filtered_final_report.csv')
+        best_model = CatBoostRegressor(depth=report['Depth'][0], iterations=report['Iterations'][0], learning_rate=report['Learning Rate'][0],verbose=0).fit(x_train,y_train)
+        Utility.create_directory('./data/best_model')
+        Utility.save(best_model , './data/best_model/best_model.pkl')
+        logging.info("[utils.py] Model Saved Successfully")
+                        
+
+    def remove_unwanted_columns(data):
+        column_names = Utility.column_names()
+        data_cols = list(data.columns)
+        to_remove_cols = [x for x in data_cols if x not in column_names]
+        data.drop(to_remove_cols, axis=1, inplace=True)
+        return data
+
 
     # The 'column_names' function returns the list of column names whenever it was called.
     def column_names():

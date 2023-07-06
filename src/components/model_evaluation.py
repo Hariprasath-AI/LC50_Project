@@ -34,20 +34,23 @@ class ModelEvaluation:
             report = pd.DataFrame(pd.read_csv('./data/report/report.csv', header = 0))
             logging.info("[model_evaluation.py] Error Occured at 'evaluate'")
 
-            if (max(report['r2_score(Testing)']) >= 0.7):
-                report = report.where(report['r2_score(Testing)'] == max(report['r2_score(Testing)']))
-                report = report.dropna()            
-                best_model_name = list(report['Model_name'])[0]
-                x_train, y_train, x_test, y_test = Utility.import_splitted_data()
-                models = Utility.models()
-                model = models[best_model_name]
-                model = model.fit(x_train, y_train)
-                pred = model.predict(x_test)
-                Utility.create_directory('./data/model')
-                Utility.save(model , './data/model/best_model.pkl')
-                logging.info(f"Here, the best model is {best_model_name} with r2_score of {max(report['r2_score(Testing)'])}")
-            else:
-                logging.info("No better models found because of r2_score is lower tha 0.7 for all the models")
+        if (max(report['r2_score(Testing)']) >= 0.65):
+            report = report.where(report['r2_score(Testing)'] == max(report['r2_score(Testing)']))
+            report = report.dropna()            
+            best_model_name = list(report['Model_name'])[0]
+            x_train, y_train, x_test, y_test = Utility.import_splitted_data()
+            models = Utility.models()
+            model = models[best_model_name]
+            model = model.fit(x_train, y_train)
+            pred = model.predict(x_test)
+            Utility.create_directory('./data/model')
+            Utility.save(model , './data/model/model.pkl')
+            logging.info(f"[model_evaluation.py] Here, the best model is {best_model_name} with r2_score of {max(report['r2_score(Testing)'])}")
+        else:
+            logging.info("[model_evaluation.py] No better models found because of r2_score is lower than 0.65 for all the models")
+            Utility.filtered_report()
+            logging.info("[model_evaluation.py] Custom Model Training Started....")
+
                     
 
 

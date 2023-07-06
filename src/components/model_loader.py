@@ -12,7 +12,7 @@ class ModelLoader:
     '''
     def loader():
         try:
-            model = Utility.load('./data/model/best_model.pkl')
+            model = Utility.load('./data/best_model/best_model.pkl')
             logging.info("[model_loader.py] Model is already there. So, loaded from default location")
         except:
             ModelEvaluation.evaluate()

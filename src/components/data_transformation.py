@@ -8,6 +8,7 @@ from src.components.data_validation import DataValidation
 from sklearn.impute import SimpleImputer
 from sklearn.model_selection import train_test_split
 from sklearn.compose import ColumnTransformer
+from catboost import CatBoostRegressor
 import pickle
 from src.utils import Utility
 
@@ -20,6 +21,7 @@ class DataTransformation:
             logging.info(f"[data_transformation.py] There's a {data.duplicated().sum()} duplicated record in the dataset and removed successfully.")
             logging.info("[data_transformation.py] The Data passed the 'duplicates_handling()' and moved to check datatypes of the features")
             data.drop_duplicates(inplace=True)
+            data.reset_index(drop=True, inplace=True)
         else:
             logging.info("[data_transformation.py] While Handling the data, there's no duplicates. The Data passed the Duplicates Handling phase") 
         return data
@@ -28,8 +30,24 @@ class DataTransformation:
     The 'get_check_dtypes' function gets the data from 'handling_duplicates' and check whether the datatype of each column is in numeric type or not.
     If the data holds any non-numeric feature, then the data is not moved further in this project.
     '''
-    def get_check_dtypes():
+
+    def handling_duplicates_level2():
         data = DataTransformation.handling_duplicates()
+        index = []
+        for i in range(0,len(data)):
+            col1, col2, col3, col4, col5, col6 = data['CIC0'][i], data['SM1_Dz(Z)'][i], data['GATS1i'][i], data['NdsCH'][i], data['NdssC'][i], data['MLOGP'][i]
+            for j in range(0,len(data)):
+                if (j != i) & (data['CIC0'][j] == col1) & (data['SM1_Dz(Z)'][j] == col2) & (data['GATS1i'][j] == col3) & (data['NdsCH'][j] == col4) & (data['NdssC'][j] == col5) & (data['MLOGP'][j] == col6):
+                    index.append(j)
+                    index.append(i)
+                else:
+                    continue
+        data = data.drop(list(set(index)))
+        data.reset_index(drop=True, inplace=True)
+        return data
+
+    def get_check_dtypes():
+        data = DataTransformation.handling_duplicates_level2()
         df_types = pd.DataFrame(data.dtypes)
         df_types.reset_index(inplace=True)
         df_types.rename(columns={'index': 'col_name', 0: 'data_type'}, inplace=True)
@@ -137,8 +155,50 @@ class DataTransformation:
         return data
 
     '''
-    The 'train_test_splitting' function is responsible for saving the data which got from 'dimensionality_reduction' as cleaned data.
+    The 'splitting' function is responsible for saving the data which got from 'dimensionality_reduction' as cleaned data.
     The, it splits the data into train and test set for Model Training phase and save into the paricular directory and logged.
+    '''
+    def splitting():
+        try:
+            train = pd.DataFrame(pd.read_csv('/data/train/train.csv'))
+            test = pd.DataFrame(pd.read_csv('/data/test/test.csv'))
+        except:
+            data = DataTransformation.dimensionality_reduction()
+            data = Utility.remove_unwanted_columns(data)
+            Utility.create_directory('./data/cleaned_data')
+            data.to_csv('./data/cleaned_data/cleaned_data.csv')
+            data_check = data.copy()
+            data_check['Count of Failure'] = np.zeros(len(data_check))
+            for i in range(2500):
+                x_train, x_test, y_train, y_test = train_test_split(data_check.drop(['LC50'], axis = 1), data_check['LC50'], test_size= 0.2)
+                cbr = CatBoostRegressor(verbose=0).fit(x_train, y_train)
+                for i in range(len(x_test)):
+                    pred = cbr.predict(x_test.iloc[i])
+                    error = abs(pred - y_test.iloc[i])
+                    if error >=1:
+                        find = data_check.loc[((data_check['CIC0'] == x_test.iloc[i][0]) & (data_check['SM1_Dz(Z)'] == x_test.iloc[i][1]) & (data_check['GATS1i'] == x_test.iloc[i][2]) & (data_check['NdsCH'] == x_test.iloc[i][3]) & (data_check['NdssC'] == x_test.iloc[i][4]) & (data_check['MLOGP'] == x_test.iloc[i][5]) )]
+                        count = find['Count of Failure']
+                        count += 1                      
+                        data_check.loc[( (data_check['CIC0'] == x_test.iloc[i][0]) &
+                                    (data_check['SM1_Dz(Z)'] == x_test.iloc[i][1]) &
+                                    (data_check['GATS1i'] == x_test.iloc[i][2]) &
+                                    (data_check['NdsCH'] == x_test.iloc[i][3]) &
+                                    (data_check['NdssC'] == x_test.iloc[i][4]) &
+                                    (data_check['MLOGP'] == x_test.iloc[i][5]) ), 'Count of Failure'] = count
+                    else:
+                        pass
+            data_check.sort_values(by='Count of Failure', ascending=False, inplace=True)
+            data_check = Utility.remove_unwanted_columns(data_check)
+            data_check.reset_index(drop=True, inplace=True)
+            train = data_check.iloc[: int(len(data_check) * 0.8), :]
+            test = data_check.iloc[int(len(data_check) * 0.8):, :]
+            Utility.create_directory('./data/train')
+            Utility.create_directory('./data/test')
+            train.to_csv('./data/train/train.csv')
+            test.to_csv('./data/test/test.csv')
+            logging.info("[data_transformation.py] Splitting data into train and test set is done successfully.")
+            logging.info("Data Transformation is completed successfully")
+
     '''
     def train_test_splitting():
         try:
@@ -164,7 +224,7 @@ class DataTransformation:
             test_data.to_csv('./data/test/test.csv')
             logging.info("[data_transformation.py] Splitting data into train and test set is done successfully.")
             logging.info("Data Transformation is completed successfully")
-
+    '''
 
 
         

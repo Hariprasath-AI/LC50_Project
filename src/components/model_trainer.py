@@ -25,7 +25,7 @@ class ModelTrainer:
         try:
             x_train, y_train, x_test, y_test = Utility.import_splitted_data()
         except:
-            DataTransformation.train_test_splitting()
+            DataTransformation.splitting()
             x_train, y_train, x_test, y_test = Utility.import_splitted_data()
         return x_train, y_train, x_test, y_test
 
@@ -89,7 +89,7 @@ class ModelTrainer:
     Then, it calculates the count on range of zero to one, one to two, two to three and greater than three.
     Finally, the calculated range is returned.
     '''
-    def calculate_error_range(pred, y_test, name):
+    def calculate_error_range( y_test, pred, name):
         error=[]
         zero_to_one,one_to_two,two_to_three,greater_than_three=0,0,0,0
         for i in range(len(y_test)):
@@ -112,12 +112,17 @@ class ModelTrainer:
     'Error between 1 and 2 out of 182 test data', 'Error between 2 and 3 out of 182 test data' and 'Error Greater than 3 out of 182 test data'. 
     '''
     def generate_report():
-        Utility.create_directory('./data/report')
         report = pd.DataFrame()
         model_name_list, training_time_list, prediction_time_list = [],[],[]
         train_score_list, test_score_list, mean_absolute_error_list, mean_squared_error_list = [],[],[],[]
         zero_to_one_list, one_to_two_list, two_to_three_list, greater_than_three_list = [],[],[],[]
-        x_train, y_train, x_test, y_test = ModelTrainer.import_data()
+        try:
+            data = pd.DataFrame(pd.read_csv('./data/cleaned_data/cleaned_data.csv'),header=0)
+        except:
+            DataTransformation.splitting()
+        data = Utility.remove_unwanted_columns(data)
+        data.reset_index(drop=True, inplace=True)
+        x_train, x_test, y_train, y_test = train_test_split(data.drop(['LC50'],axis=1), data['LC50'], test_size=0.2)
         models = Utility.models()
         for x in list(models):
             pred_y_test, pred_y_train, training_time, prediction_time = ModelTrainer.model_trainer(models[x], x_train, y_train, x_test, x)
@@ -149,6 +154,7 @@ class ModelTrainer:
         report['Error between 1 and 2 out of 182 test data'] = one_to_two_list
         report['Error between 2 and 3 out of 182 test data'] = two_to_three_list
         report['Error Greater than 3 out of 182 test data'] = greater_than_three_list
+        Utility.create_directory('./data/report')
         report.to_csv('./data/report/report.csv')
         logging.info("[model_trainer.py] The report is generated successfully")
         logging.info("Model Training is Successfully completed")     
