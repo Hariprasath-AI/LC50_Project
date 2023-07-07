@@ -30,7 +30,7 @@ class Utility:
             'Multiple Linear Regresion' : LinearRegression(),
             'RandomForest Regressor' : RandomForestRegressor(),
             'GradientBoosting Regressor' : GradientBoostingRegressor(),
-            'CatBoost Regressor' : CatBoostRegressor(),
+            'CatBoost Regressor' : CatBoostRegressor(verbose=0),
             'SupportVector Regressor' : SVR()
         }
         return models_
@@ -76,9 +76,9 @@ class Utility:
         try:
             report = pd.DataFrame(pd.read_csv('./data/final_report/final_report.csv', header=0))
         except:
+            x_train, y_train, x_test, y_test = .Utility.import_custom_splitted_data()
             Utility.custom_model_training(x_train, y_train, x_test, y_test)
             report = pd.DataFrame(pd.read_csv('./data/final_report/final_report.csv', header=0))
-        x_train, y_train, x_test, y_test = Utility.import_splitted_data()
         report_cols = ['Model Name','R2_Score(Training)','R2_Score_Testing','Depth','Iterations','Learning Rate', 'Score Difference']
         to_drop = [x for x in list(report.columns) if x not in report_cols]
         report.drop(to_drop, axis=1, inplace=True)
@@ -91,7 +91,7 @@ class Utility:
         best_model = CatBoostRegressor(depth=report['Depth'][0], iterations=report['Iterations'][0], learning_rate=report['Learning Rate'][0],verbose=0).fit(x_train,y_train)
         Utility.create_directory('./data/best_model')
         Utility.save(best_model , './data/best_model/best_model.pkl')
-        logging.info("[utils.py] Model Saved Successfully")
+        logging.info("[utils.py] Best Model Saved Successfully")
                         
 
     def remove_unwanted_columns(data):
@@ -115,8 +115,55 @@ class Utility:
     Finally, the function returns the x_train, y_train, x_test, y_test values.
     '''
     def import_splitted_data():
-        train=pd.DataFrame(pd.read_csv('./data/train/train.csv', header = 0))
-        test=pd.DataFrame(pd.read_csv('./data/test/test.csv', header = 0))
+        train=pd.DataFrame(pd.read_csv('./data/train_usual/train.csv', header = 0))
+        test=pd.DataFrame(pd.read_csv('./data/test_usual/test.csv', header = 0))
+        to_drop_in_train = [x for x in list(train.columns) if x not in Utility.column_names()]
+        to_drop_in_test = [x for x in list(test.columns) if x not in Utility.column_names()]
+        train = train.drop(to_drop_in_train, axis = 1)
+        test = test.drop(to_drop_in_test, axis = 1)
+        x_train = train.drop(['LC50'], axis=1)
+        y_train = train['LC50']
+        x_test = test.drop(['LC50'], axis=1)
+        y_test = test['LC50']
+        logging.info("[utils.py] The train and test data is imported successfully")
+        return x_train, y_train, x_test, y_test
+
+    def import_custom_splitted_data():
+        try:
+            train=pd.DataFrame(pd.read_csv('./data/train/train.csv', header = 0))
+            test=pd.DataFrame(pd.read_csv('./data/test/test.csv', header = 0))
+        except:
+            data = pd.DataFrame(pd.read_csv('./data/cleaned_data/cleaned_data.csv', header=0))
+            data = Utility.remove_unwanted_columns(data)
+            data_check = data.copy()
+            data_check['Count of Failure'] = np.zeros(len(data_check))
+            for i in range(2500):
+                x_train, x_test, y_train, y_test = train_test_split(data_check.drop(['LC50'], axis = 1), data_check['LC50'], test_size= 0.2)
+                cbr = CatBoostRegressor(verbose=0).fit(x_train, y_train)
+                for i in range(len(x_test)):
+                    pred = cbr.predict(x_test.iloc[i])
+                    error = abs(pred - y_test.iloc[i])
+                    if error >=1:
+                        find = data_check.loc[((data_check['CIC0'] == x_test.iloc[i][0]) & (data_check['SM1_Dz(Z)'] == x_test.iloc[i][1]) & (data_check['GATS1i'] == x_test.iloc[i][2]) & (data_check['NdsCH'] == x_test.iloc[i][3]) & (data_check['NdssC'] == x_test.iloc[i][4]) & (data_check['MLOGP'] == x_test.iloc[i][5]) )]
+                        count = find['Count of Failure']
+                        count += 1                      
+                        data_check.loc[( (data_check['CIC0'] == x_test.iloc[i][0]) &
+                                    (data_check['SM1_Dz(Z)'] == x_test.iloc[i][1]) &
+                                    (data_check['GATS1i'] == x_test.iloc[i][2]) &
+                                    (data_check['NdsCH'] == x_test.iloc[i][3]) &
+                                    (data_check['NdssC'] == x_test.iloc[i][4]) &
+                                    (data_check['MLOGP'] == x_test.iloc[i][5]) ), 'Count of Failure'] = count
+                    else:
+                        pass
+            data_check.sort_values(by='Count of Failure', ascending=False, inplace=True)
+            data_check = Utility.remove_unwanted_columns(data_check)
+            data_check.reset_index(drop=True, inplace=True)
+            train,test = data_check.iloc[: int(len(data_check) * 0.8), :], data_check.iloc[int(len(data_check) * 0.8):, :]
+            Utility.create_directory('./data/train')
+            Utility.create_directory('./data/test')
+            train.to_csv('./data/train/train.csv')
+            test.to_csv('./data/test/test.csv')
+            
         to_drop_in_train = [x for x in list(train.columns) if x not in Utility.column_names()]
         to_drop_in_test = [x for x in list(test.columns) if x not in Utility.column_names()]
         train = train.drop(to_drop_in_train, axis = 1)

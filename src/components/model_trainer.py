@@ -15,7 +15,6 @@ from src.utils import Utility
 
 # All operations related to Model Training phase are carried out inside the class 'ModelTrainer'
 class ModelTrainer:
-
     '''
     The 'import_data' function first tries to get the x_train, y_train, x_test and y_test from the 'import_splitted_data' method 
     of class 'Utility' from 'utils.py'. If not, 'train_test_splitting' method of class 'DataTransformation' is called and then 
@@ -25,7 +24,7 @@ class ModelTrainer:
         try:
             x_train, y_train, x_test, y_test = Utility.import_splitted_data()
         except:
-            DataTransformation.splitting()
+            DataTransformation.splitting_usual()
             x_train, y_train, x_test, y_test = Utility.import_splitted_data()
         return x_train, y_train, x_test, y_test
 
@@ -117,12 +116,10 @@ class ModelTrainer:
         train_score_list, test_score_list, mean_absolute_error_list, mean_squared_error_list = [],[],[],[]
         zero_to_one_list, one_to_two_list, two_to_three_list, greater_than_three_list = [],[],[],[]
         try:
-            data = pd.DataFrame(pd.read_csv('./data/cleaned_data/cleaned_data.csv'),header=0)
+            x_train, y_train, x_test, y_test = ModelTrainer.import_data()
         except:
-            DataTransformation.splitting()
-        data = Utility.remove_unwanted_columns(data)
-        data.reset_index(drop=True, inplace=True)
-        x_train, x_test, y_train, y_test = train_test_split(data.drop(['LC50'],axis=1), data['LC50'], test_size=0.2)
+            DataTransformation.splitting_usual()
+            x_train, y_train, x_test, y_test = ModelTrainer.import_data()
         models = Utility.models()
         for x in list(models):
             pred_y_test, pred_y_train, training_time, prediction_time = ModelTrainer.model_trainer(models[x], x_train, y_train, x_test, x)

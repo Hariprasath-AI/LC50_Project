@@ -15,6 +15,10 @@ class ModelLoader:
             model = Utility.load('./data/best_model/best_model.pkl')
             logging.info("[model_loader.py] Model is already there. So, loaded from default location")
         except:
-            ModelEvaluation.evaluate()
+            try:
+                model = Utility.load('./data/model/model.pkl')
+            except:
+                ModelEvaluation.evaluate()
+                ModelLoader.loader()
             logging.info("[model_loader.py] Model is not present is the default location. So, we're going to develop a model")
         return model
