@@ -27,9 +27,10 @@ def make_predictions():
         try:
             data = [float(x) for x in request.form.values()]
             data = np.array(data)
+            pred = model.predict(data)
         except:
+            pred = "Input Error"
             logging.info("[app.py] Error Occured while getting data from FORM-HTML[home.html]")
-        pred = model.predict(data)
         return render_template('home.html', preds=pred)
 
 # This main method is called while running this application
