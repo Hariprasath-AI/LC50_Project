@@ -76,7 +76,7 @@ class Utility:
         try:
             report = pd.DataFrame(pd.read_csv('./data/final_report/final_report.csv', header=0))
         except:
-            x_train, y_train, x_test, y_test = .Utility.import_custom_splitted_data()
+            x_train, y_train, x_test, y_test = Utility.import_custom_splitted_data()
             Utility.custom_model_training(x_train, y_train, x_test, y_test)
             report = pd.DataFrame(pd.read_csv('./data/final_report/final_report.csv', header=0))
         report_cols = ['Model Name','R2_Score(Training)','R2_Score_Testing','Depth','Iterations','Learning Rate', 'Score Difference']
