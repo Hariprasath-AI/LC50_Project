@@ -93,7 +93,7 @@ class Utility:
         Utility.save(best_model , './data/best_model/best_model.pkl')
         logging.info("[utils.py] Best Model Saved Successfully")
                         
-
+    # The function 'remove_unwanted_columns' is responsible for removing irrelevant feature in an input dataframe
     def remove_unwanted_columns(data):
         column_names = Utility.column_names()
         data_cols = list(data.columns)

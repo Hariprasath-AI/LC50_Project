@@ -156,7 +156,7 @@ class DataTransformation:
         logging.info("[data_transformation.py] Dimensionality reduction successfully completed.")
         return data
     '''
-    The 'splitting_usual' splits and saves train and test set. Then, data is send to the next phase..
+    The 'splitting_usual' function splits the data into train and test set for Model Training phase and save into the paricular directory and logged.
     '''
     def splitting_usual():
         data = DataTransformation.dimensionality_reduction()
@@ -167,45 +167,5 @@ class DataTransformation:
         Utility.create_directory('./data/test_usual')
         train.to_csv('./data/train_usual/train.csv')
         test.to_csv('./data/test_usual/test.csv')
-
-    '''
-    The 'splitting' function splits the data into train and test set for Model Training phase and save into the paricular directory and logged.
-    '''
-    def splitting():
-        try:
-            train = pd.DataFrame(pd.read_csv('/data/train/train.csv'))
-            test = pd.DataFrame(pd.read_csv('/data/test/test.csv'))
-        except:
-            
-            logging.info("[data_transformation.py] Splitting data into train and test set is done successfully.")
-            logging.info("Data Transformation is completed successfully")
-
-    '''
-    def train_test_splitting():
-        try:
-            train_data = pd.read_csv('./data/train/train.csv')
-            test_data = pd.read_csv('./data/test/test.csv')
-            logging.info("[data_transformation.py] Train and Test split is already there. So, Re-spliiting avoided")
-
-        except:
-            logging.info("[data_transformation.py] Train or test data is missing. So, we're splitting from raw data.")
-            try:
-                data = pd.read_csv('./data/cleaned_data/cleaned_data.csv')
-            except:
-                data = DataTransformation.dimensionality_reduction()
-                Utility.create_directory('./data/cleaned_data')
-                data.to_csv('./data/cleaned_data/cleaned_data.csv')
-
-            train_data,test_data=train_test_split(data,test_size = 0.2)
-            train_data.reset_index(drop=True, inplace = True)
-            test_data.reset_index(drop=True, inplace = True)
-            Utility.create_directory('./data/train')
-            Utility.create_directory('./data/test')
-            train_data.to_csv('./data/train/train.csv')
-            test_data.to_csv('./data/test/test.csv')
-            logging.info("[data_transformation.py] Splitting data into train and test set is done successfully.")
-            logging.info("Data Transformation is completed successfully")
-    '''
-
-
-        
+        logging.info("[data_transformation.py] Splitting data into train and test set is done successfully.")
+        logging.info("Data Transformation is completed successfully")

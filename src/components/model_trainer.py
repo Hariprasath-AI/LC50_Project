@@ -47,42 +47,6 @@ class ModelTrainer:
         return pred_y_test, pred_y_train, training_time, prediction_time
 
     '''
-    The 'get_mean_absolute_error' function gets prediction on y_test, y_test and model name as input.
-    Then, mean_absolute_error is calculated on y_test and prediction then returned
-    '''
-    def get_mean_absolute_error(pred, y_test, x):
-        score = mean_absolute_error(y_test, pred)
-        logging.info(f"[model_trainer.py] Calculated Mean Absolute Error successfully in {x}")
-        return score 
-    
-    '''
-    The 'get_mean_squared_error' function gets prediction on y_test, y_test and model name as input.
-    Then, mean_squared_error is calculated on y_test and prediction then returned
-    '''
-    def get_mean_squared_error(pred, y_test, x):
-        score = mean_squared_error(y_test, pred)
-        logging.info(f"[model_trainer.py] Calculated Mean Squared Error successfully in {x}")
-        return score
-
-    '''
-    The 'get_train_score' function gets prediction on y_train, y_train and model name as input.
-    Then, r2_score is calculated on y_train and prediction then returned.
-    '''
-    def get_train_score(y_train, pred_y_train, x):
-        train_score = r2_score(y_train, pred_y_train)
-        logging.info(f"[model_trainer.py] The train score is calculated successfully in {x}")
-        return train_score
-
-    '''
-    The 'get_test_score' function gets prediction on y_test, y_test and model name as input.
-    Then, r2_score is calculated on y_test and prediction then returned.
-    '''
-    def get_test_score(y_test, pred_y_test, x):
-        test_score = r2_score(y_test, pred_y_test)
-        logging.info(f"[model_trainer.py] The test score is calculated successfully in {x}")
-        return test_score
-
-    '''
     The function 'calculate_error_range' gets prediction , y_test and model name as input.
     Then, it calculates the difference between prediction and actual value. This show how good the model is...
     Then, it calculates the count on range of zero to one, one to two, two to three and greater than three.
@@ -123,10 +87,10 @@ class ModelTrainer:
         models = Utility.models()
         for x in list(models):
             pred_y_test, pred_y_train, training_time, prediction_time = ModelTrainer.model_trainer(models[x], x_train, y_train, x_test, x)
-            train_score = ModelTrainer.get_train_score(y_train, pred_y_train, x)
-            test_score = ModelTrainer.get_test_score(y_test, pred_y_test, x)
-            mean_absolute_error_ = ModelTrainer.get_mean_absolute_error(y_test, pred_y_test, x)
-            mean_squared_error_ = ModelTrainer.get_mean_squared_error(y_test, pred_y_test, x)
+            train_score = r2_score(y_train, pred_y_train)
+            test_score = r2_score(y_test, pred_y_test)
+            mean_absolute_error_ = mean_absolute_error(y_test, pred)
+            mean_squared_error_ = mean_squared_error(y_test, pred)
             zero_to_one, one_to_two, two_to_three, greater_than_three = ModelTrainer.calculate_error_range(y_test, pred_y_test, x)
             model_name_list.append(str(x))
             training_time_list.append(training_time)
