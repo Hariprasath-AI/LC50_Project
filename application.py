@@ -29,7 +29,7 @@ def make_predictions():
             data = np.array(data)
             pred = model.predict(data)
         except:
-            pred = "Input Error"
+            pred = "--Input Error--"
             logging.info("[app.py] Error Occured while getting data from FORM-HTML[home.html]")
         return render_template('home.html', preds=pred)
 
