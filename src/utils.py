@@ -10,7 +10,7 @@ from sklearn.svm import SVR
 from sklearn.neighbors import KNeighborsRegressor
 from sklearn.metrics import r2_score
 from sklearn.model_selection import GridSearchCV
-from src.logger import logging
+#from src.logger import logging
 import pandas as pd
 import pickle
 
@@ -22,7 +22,8 @@ class Utility:
         try:
             os.makedirs(path, exist_ok=True)
         except:
-            logging.info("There was an error while creating a directory or 'Directory already exists'")
+            pass
+            #logging.info("There was an error while creating a directory or 'Directory already exists'")
 
     # The 'models' function returns the dictionary of Machinelearning models whenever it was called.
     def models():
@@ -91,7 +92,7 @@ class Utility:
         best_model = CatBoostRegressor(depth=report['Depth'][0], iterations=report['Iterations'][0], learning_rate=report['Learning Rate'][0],verbose=0).fit(x_train,y_train)
         Utility.create_directory('./data/best_model')
         Utility.save(best_model , './data/best_model/best_model.pkl')
-        logging.info("[utils.py] Best Model Saved Successfully")
+        #logging.info("[utils.py] Best Model Saved Successfully")
                         
     # The function 'remove_unwanted_columns' is responsible for removing irrelevant feature in an input dataframe
     def remove_unwanted_columns(data):
@@ -125,7 +126,7 @@ class Utility:
         y_train = train['LC50']
         x_test = test.drop(['LC50'], axis=1)
         y_test = test['LC50']
-        logging.info("[utils.py] The train and test data is imported successfully")
+        #logging.info("[utils.py] The train and test data is imported successfully")
         return x_train, y_train, x_test, y_test
 
     def import_custom_splitted_data():
@@ -172,7 +173,7 @@ class Utility:
         y_train = train['LC50']
         x_test = test.drop(['LC50'], axis=1)
         y_test = test['LC50']
-        logging.info("[utils.py] The train and test data is imported successfully")
+        #logging.info("[utils.py] The train and test data is imported successfully")
         return x_train, y_train, x_test, y_test
 
     # The 'save' function gets the path and model variable as input parameter. Then, it saves the model in pickle format in the path.

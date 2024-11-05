@@ -2,7 +2,7 @@
 import os
 import pandas as pd
 import numpy as np
-from src.logger import logging 
+#from src.logger import logging 
 from src.exceptions import CustomException 
 from src.components.data_transformation import DataTransformation
 from sklearn.impute import SimpleImputer
@@ -43,7 +43,7 @@ class ModelTrainer:
         pred_y_test = model.predict(x_test)
         prediction_time = time.time()-start_time
         pred_y_train = model.predict(x_train)
-        logging.info(f"[model_trainer.py] Training and Prediction time is recorded successfully in {x}")
+        #logging.info(f"[model_trainer.py] Training and Prediction time is recorded successfully in {x}")
         return pred_y_test, pred_y_train, training_time, prediction_time
 
     '''
@@ -66,7 +66,7 @@ class ModelTrainer:
                 two_to_three+=1
             elif (x>3):
                 greater_than_three+=1
-        logging.info(f"[model_trainer.py] The Error range is calculated successfully in {name}")
+        #logging.info(f"[model_trainer.py] The Error range is calculated successfully in {name}")
         return zero_to_one, one_to_two, two_to_three, greater_than_three
 
     '''
@@ -117,8 +117,8 @@ class ModelTrainer:
         report['Error Greater than 3 out of 182 test data'] = greater_than_three_list
         Utility.create_directory('./data/report')
         report.to_csv('./data/report/report.csv')
-        logging.info("[model_trainer.py] The report is generated successfully")
-        logging.info("Model Training is Successfully completed")     
+        #logging.info("[model_trainer.py] The report is generated successfully")
+        #logging.info("Model Training is Successfully completed")     
 
 
 

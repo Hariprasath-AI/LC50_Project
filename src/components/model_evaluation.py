@@ -4,7 +4,7 @@ from src.utils import Utility
 import pickle
 import pandas as pd
 import os
-from src.logger import logging
+#from src.logger import logging
 import numpy as np
 
 # All operations related to Data Evaluation phase are carried out inside the class 'ModelEvaluation'
@@ -16,11 +16,11 @@ class ModelEvaluation:
     def evaluate():
         try:
             report = pd.DataFrame(pd.read_csv('./data/report/report.csv', header = 0))
-            logging.info("[model_evaluation.py]  'evaluate' try block passed")
+            #logging.info("[model_evaluation.py]  'evaluate' try block passed")
         except:
             ModelTrainer.generate_report()
             report = pd.DataFrame(pd.read_csv('./data/report/report.csv', header = 0))
-            logging.info("[model_evaluation.py] Error Occured at 'evaluate'")
+            #logging.info("[model_evaluation.py] Error Occured at 'evaluate'")
         check_value = np.mean(list(report['r2_score(Training)'] - report['r2_score(Testing)']))
         if (check_value >= 0) and (check_value < 0.1):
             report = report.where(report['r2_score(Testing)'] == max(report['r2_score(Testing)']))
@@ -33,11 +33,11 @@ class ModelEvaluation:
             pred = model.predict(x_test)
             Utility.create_directory('./data/model')
             Utility.save(model , './data/model/model.pkl')
-            logging.info(f"[model_evaluation.py] Here, the best model is {model_name} with r2_score of {max(report['r2_score(Testing)'])}")
+            #logging.info(f"[model_evaluation.py] Here, the best model is {model_name} with r2_score of {max(report['r2_score(Testing)'])}")
         else:
-            logging.info("[model_evaluation.py] No better models found because of r2_score is lower than 0.75 for all the models")
+            #logging.info("[model_evaluation.py] No better models found because of r2_score is lower than 0.75 for all the models")
             Utility.filtered_report()
-            logging.info("[model_evaluation.py] Custom Model Training Started....")
+            #logging.info("[model_evaluation.py] Custom Model Training Started....")
             
 
                     

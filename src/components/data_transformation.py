@@ -2,7 +2,7 @@
 import os
 import pandas as pd
 import numpy as np
-from src.logger import logging 
+#from src.logger import logging 
 from src.exceptions import CustomException 
 from src.components.data_validation import DataValidation
 from sklearn.impute import SimpleImputer
@@ -18,12 +18,13 @@ class DataTransformation:
     def handling_duplicates():
         data=DataValidation.validate()
         if data.duplicated().sum() > 0:
-            logging.info(f"[data_transformation.py] There's a {data.duplicated().sum()} duplicated record in the dataset and removed successfully.")
-            logging.info("[data_transformation.py] The Data passed the 'duplicates_handling()' and moved to check datatypes of the features")
+            #logging.info(f"[data_transformation.py] There's a {data.duplicated().sum()} duplicated record in the dataset and removed successfully.")
+            #logging.info("[data_transformation.py] The Data passed the 'duplicates_handling()' and moved to check datatypes of the features")
             data.drop_duplicates(inplace=True)
             data.reset_index(drop=True, inplace=True)
         else:
-            logging.info("[data_transformation.py] While Handling the data, there's no duplicates. The Data passed the Duplicates Handling phase") 
+            pass
+            #logging.info("[data_transformation.py] While Handling the data, there's no duplicates. The Data passed the Duplicates Handling phase") 
         return data
 
     # 'Handling_duplicates_level2' removes all duplicates in independent features.
@@ -52,7 +53,7 @@ class DataTransformation:
         df_types=pd.DataFrame(data.dtypes)
         df_types.reset_index(inplace=True)
         df_types.rename(columns={'index': 'col_name', 0: 'data_type'}, inplace=True)
-        logging.info("[data_transformation.py] Got Datatypes of each column successfully")
+        #logging.info("[data_transformation.py] Got Datatypes of each column successfully")
         problamatic_column = []
         for i in range(len(df_types)):
             if str(df_types['data_type'][i]).__contains__('int') or str(df_types['data_type'][i]).__contains__('float'):
@@ -60,11 +61,12 @@ class DataTransformation:
             else:
                 problamatic_column.append(df_types['col_name'][i])
         if len(problamatic_column) == 0:
-            logging.info("[data_transformation.py] There is no problem with the datatype of each column. The data passed 'get_check_dtypes()' successfully.")
+            #logging.info("[data_transformation.py] There is no problem with the datatype of each column. The data passed 'get_check_dtypes()' successfully.")
             return data
         else:
-            logging.info(f"[data_transformation.py] There is a problem with the datatype of column -> {problamatic_column}")
-            logging.info(f"[data_transformation.py] The data holds non-numeric feature, then the data is not moved further in this project. Please resolve this!!")
+            pass
+            #logging.info(f"[data_transformation.py] There is a problem with the datatype of column -> {problamatic_column}")
+            #logging.info(f"[data_transformation.py] The data holds non-numeric feature, then the data is not moved further in this project. Please resolve this!!")
 
     '''
     This function replace the missing values in independent variable with mean and mode. 
@@ -91,10 +93,10 @@ class DataTransformation:
             # Column order is changed due to ColumnTransformer. So, we're reverting back to original form
             for x in Utility.column_names():
                 data[x] = new_data[x]
-            logging.info("[data_transformation.py] The data has passed 'handling_missing_values()' successfully.")
+            #logging.info("[data_transformation.py] The data has passed 'handling_missing_values()' successfully.")
             return data
         except Exception as e:
-            logging.info("[data_transformation.py] The data won't received 'handling_missing_values()'. So, please resolve this problem.")
+            #logging.info("[data_transformation.py] The data won't received 'handling_missing_values()'. So, please resolve this problem.")
             raise CustomException(e, sys)
 
     '''
@@ -129,7 +131,7 @@ class DataTransformation:
             tenth_percentile, ninetieth_percentile, lower_bound, upper_bound=DataTransformation.compute_outlier(data, col)
             data.loc[data[col]<lower_bound, col]=tenth_percentile
             data.loc[data[col]>upper_bound, col]=ninetieth_percentile
-        logging.info("[data_transformation.py] Outliers handled successfully in 'handling_outlier()'.")
+        #logging.info("[data_transformation.py] Outliers handled successfully in 'handling_outlier()'.")
         return data
     
     '''
@@ -153,7 +155,7 @@ class DataTransformation:
         data = Utility.remove_unwanted_columns(data)
         Utility.create_directory('./data/cleaned_data')
         data.to_csv('./data/cleaned_data/cleaned_data.csv')
-        logging.info("[data_transformation.py] Dimensionality reduction successfully completed.")
+        #logging.info("[data_transformation.py] Dimensionality reduction successfully completed.")
         return data
     '''
     The 'splitting_usual' function splits the data into train and test set for Model Training phase and save into the paricular directory and logged.
@@ -167,5 +169,5 @@ class DataTransformation:
         Utility.create_directory('./data/test_usual')
         train.to_csv('./data/train_usual/train.csv')
         test.to_csv('./data/test_usual/test.csv')
-        logging.info("[data_transformation.py] Splitting data into train and test set is done successfully.")
-        logging.info("Data Transformation is completed successfully")
+        #logging.info("[data_transformation.py] Splitting data into train and test set is done successfully.")
+        #logging.info("Data Transformation is completed successfully")

@@ -4,6 +4,8 @@ It contains lot of files. In that, we're having class and functions. The importa
 In our case, the log is useful to know about flow of the data from one method to another method and also to another file.
 We can easily identify where the code gets struck in case of 'Error' situation.
 '''
+
+"""
 import logging
 import os
 from datetime import datetime
@@ -19,3 +21,4 @@ logging.basicConfig(
     format="[ %(asctime)s ] %(lineno)d %(name)s - %(levelname)s - %(message)s",
     level = logging.INFO
 )
+"""

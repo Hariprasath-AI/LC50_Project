@@ -2,7 +2,7 @@
 import os
 import sys  
 import pandas as pd 
-from src.logger import logging 
+#from src.logger import logging 
 from src.exceptions import CustomException 
 
 '''
@@ -16,13 +16,13 @@ class DataValidation:
             loc = 'data\dataset(csv)\qsar_fish_toxicity.csv'
             column_names = ['CIC0','SM1_Dz(Z)','GATS1i','NdsCH','NdssC','MLOGP', 'LC50']
             data = pd.read_csv(loc, header = None, delimiter = ';', names = column_names)
-            logging.info("[data_validation.py] There is no problem with the data. So, we can continue further. The data passed 'validate()'")
-            logging.info("Data Validation is completed successfully")
+            #logging.info("[data_validation.py] There is no problem with the data. So, we can continue further. The data passed 'validate()'")
+            #logging.info("Data Validation is completed successfully")
             return data
         except Exception as e:
-            logging.info("[data_validation.py] Error occured while importing the data. Please check format of the data i.e., csv")
+            #logging.info("[data_validation.py] Error occured while importing the data. Please check format of the data i.e., csv")
             CustomException(e,sys)
-        logging.info("Data Validation Operations Ends here.....")
+        #logging.info("Data Validation Operations Ends here.....")
         
     
             

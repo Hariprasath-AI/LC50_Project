@@ -5,7 +5,7 @@ from flask import Flask, request, render_template
 import numpy as np 
 import pandas as pd
 from src.components.model_loader import ModelLoader
-from src.logger import logging
+#from src.logger import logging
 
 application=Flask(__name__)
 
@@ -30,7 +30,7 @@ def make_predictions():
             pred = model.predict(data)
         except:
             pred = "--Input Error--"
-            logging.info("[app.py] Error Occured while getting data from FORM-HTML[home.html]")
+            #logging.info("[app.py] Error Occured while getting data from FORM-HTML[home.html]")
         return render_template('home.html', preds=pred)
 
 # This main method is called while running this application
