@@ -15,7 +15,7 @@ def get_requirements(file_name:str)->List[str]:
 
 setup(
 name = 'Prediction of LC50 value',
-version = '1.0',
+version = '2.0',
 author = 'Hariprasath',
 author_email = 'hariprasath167@gmail.com',
 packages = find_packages(),
